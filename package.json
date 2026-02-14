@@ -1,0 +1,195 @@
+{
+	"name": "vibecoding-layout",
+	"displayName": "VibeCoding Layout",
+	"description": "Portrait mode vibe coding layout for vertical monitors",
+	"version": "7.0.0",
+	"publisher": "custom",
+	"engines": {
+		"vscode": "^1.80.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"*",
+		"onView:claude-history"
+	],
+	"main": "./extension.js",
+	"contributes": {
+		"viewsContainers": {
+			"panel": [
+				{
+					"id": "vibecoding-panel",
+					"title": "Tools",
+					"icon": "$(layout)"
+				},
+				{
+					"id": "claude-history-panel",
+					"title": "CLAUDE HISTORY",
+					"icon": "$(history)"
+				},
+				{
+					"id": "todo-panel",
+					"title": "TODO",
+					"icon": "$(checklist)"
+				},
+				{
+					"id": "snippets-panel",
+					"title": "SNIPPETS",
+					"icon": "$(code)"
+				},
+				{
+					"id": "bookmarks-panel",
+					"title": "BOOKMARKS",
+					"icon": "$(bookmark)"
+				},
+				{
+					"id": "dashboard-panel",
+					"title": "DASHBOARD",
+					"icon": "$(dashboard)"
+				}
+			]
+		},
+		"views": {
+			"vibecoding-panel": [
+				{
+					"id": "vibecoding-files",
+					"name": "EXPLORER"
+				},
+				{
+					"id": "vibecoding-notes",
+					"name": "NOTES",
+					"type": "webview"
+				}
+			],
+			"claude-history-panel": [
+				{
+					"id": "claude-history",
+					"name": "Sessions",
+					"type": "webview"
+				}
+			],
+			"todo-panel": [
+				{
+					"id": "vibecoding-todo",
+					"name": "Tasks",
+					"type": "webview"
+				}
+			],
+			"snippets-panel": [
+				{
+					"id": "vibecoding-snippets",
+					"name": "Templates",
+					"type": "webview"
+				}
+			],
+			"bookmarks-panel": [
+				{
+					"id": "vibecoding-bookmarks",
+					"name": "Files",
+					"type": "webview"
+				}
+			],
+			"dashboard-panel": [
+				{
+					"id": "vibecoding-dashboard",
+					"name": "Overview",
+					"type": "webview"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "vibecoding-layout.activate",
+				"title": "VibeCoding_Layout: Activate Portrait Mode"
+			},
+			{
+				"command": "vibecoding-layout.reset",
+				"title": "VibeCoding_Layout: Reset to Default"
+			},
+			{
+				"command": "vibecoding-layout.refreshExplorer",
+				"title": "VibeCoding: Refresh Explorer",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "vibecoding-layout.openFile",
+				"title": "VibeCoding: Open File"
+			},
+			{
+				"command": "vibecoding-layout.claudeStatus",
+				"title": "VibeCoding: Claude System Status"
+			},
+			{
+				"command": "vibecoding-layout.resumeSession",
+				"title": "VibeCoding: Resume Claude Session"
+			},
+			{
+				"command": "vibecoding-layout.refreshHistory",
+				"title": "VibeCoding: Refresh History",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "vibecoding-layout.togglePomodoro",
+				"title": "VibeCoding: Toggle Pomodoro Timer"
+			},
+			{
+				"command": "vibecoding-layout.exportSession",
+				"title": "VibeCoding: Export Claude Session to Markdown"
+			},
+			{
+				"command": "vibecoding-layout.addBookmark",
+				"title": "VibeCoding: Bookmark Current File",
+				"icon": "$(bookmark)"
+			},
+			{
+				"command": "vibecoding-layout.removeBookmark",
+				"title": "VibeCoding: Remove Bookmark"
+			},
+			{
+				"command": "vibecoding-layout.refreshDashboard",
+				"title": "VibeCoding: Refresh Dashboard",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "vibecoding-layout.layoutPortrait",
+				"title": "VibeCoding: Layout - Portrait Mode"
+			},
+			{
+				"command": "vibecoding-layout.layoutLandscape",
+				"title": "VibeCoding: Layout - Landscape Mode"
+			}
+		],
+		"menus": {
+			"view/title": [
+				{
+					"command": "vibecoding-layout.refreshExplorer",
+					"when": "view == vibecoding-files",
+					"group": "navigation"
+				},
+				{
+					"command": "vibecoding-layout.refreshHistory",
+					"when": "view == claude-history",
+					"group": "navigation"
+				},
+				{
+					"command": "vibecoding-layout.refreshDashboard",
+					"when": "view == vibecoding-dashboard",
+					"group": "navigation"
+				}
+			]
+		},
+		"keybindings": [
+			{
+				"command": "vibecoding-layout.activate",
+				"key": "f7",
+				"mac": "f7"
+			},
+			{
+				"command": "vibecoding-layout.togglePomodoro",
+				"key": "f8",
+				"mac": "f8"
+			}
+		]
+	}
+}
