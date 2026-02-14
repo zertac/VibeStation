@@ -75,6 +75,23 @@ cp package.json extension.js "$dest/"
 - `VibeCoding: Layout - Portrait Mode`
 - `VibeCoding: Layout - Landscape Mode`
 
+## Data Storage
+
+VibeStation stores user data as files in your project's `.vscode/` folder:
+
+| File | Content |
+|------|---------|
+| `.vscode/vibestation-notes.md` | Your project notes |
+| `.vscode/vibestation-todo.json` | Your TODO tasks |
+| `.vscode/vibestation-snippets.json` | Your saved snippets |
+| `.vscode/vibestation-bookmarks.json` | Your bookmarked files |
+
+**Important:** Add these to your project's `.gitignore` to avoid committing personal data:
+```gitignore
+.vscode/vibestation-*.json
+.vscode/vibestation-*.md
+```
+
 ## License
 
 MIT

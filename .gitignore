@@ -2,3 +2,9 @@ node_modules/
 .DS_Store
 Thumbs.db
 *.vsix
+
+# VibeStation user data files (per-project, never commit these)
+.vscode/vibestation-notes.md
+.vscode/vibestation-todo.json
+.vscode/vibestation-snippets.json
+.vscode/vibestation-bookmarks.json

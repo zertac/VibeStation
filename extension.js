@@ -758,7 +758,7 @@ class FileExplorerProvider {
 }
 
 // ============================================
-// Notes Webview Provider (per-project)
+// Notes Webview Provider (file-based, per-project)
 // ============================================
 class NotesViewProvider {
     constructor(context) {
@@ -766,30 +766,59 @@ class NotesViewProvider {
         this._view = undefined;
     }
 
-    _getStorageKey() {
+    _getFilePath() {
         const folders = vscode.workspace.workspaceFolders;
         if (folders && folders.length > 0) {
-            return 'vibecoding-notes-' + folders[0].uri.fsPath;
+            return path.join(folders[0].uri.fsPath, '.vscode', 'vibestation-notes.md');
         }
-        return 'vibecoding-notes-global';
+        return null;
+    }
+
+    _ensureDir(filePath) {
+        const dir = path.dirname(filePath);
+        try {
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir, { recursive: true });
+            }
+        } catch (e) {}
+    }
+
+    _loadNotes() {
+        const filePath = this._getFilePath();
+        if (!filePath) return '';
+        try {
+            if (fs.existsSync(filePath)) {
+                return fs.readFileSync(filePath, 'utf-8');
+            }
+        } catch (e) {}
+        return '';
+    }
+
+    _saveNotes(text) {
+        const filePath = this._getFilePath();
+        if (!filePath) return;
+        try {
+            this._ensureDir(filePath);
+            fs.writeFileSync(filePath, text, 'utf-8');
+        } catch (e) {}
     }
 
     resolveWebviewView(webviewView) {
         this._view = webviewView;
         webviewView.webview.options = { enableScripts: true };
 
-        const savedNotes = this._context.globalState.get(this._getStorageKey(), '');
+        const savedNotes = this._loadNotes();
         webviewView.webview.html = this._getHtml(savedNotes);
 
         webviewView.webview.onDidReceiveMessage(msg => {
             if (msg.type === 'save') {
-                this._context.globalState.update(this._getStorageKey(), msg.text);
+                this._saveNotes(msg.text);
             }
         });
 
         vscode.workspace.onDidChangeWorkspaceFolders(() => {
             if (this._view) {
-                const notes = this._context.globalState.get(this._getStorageKey(), '');
+                const notes = this._loadNotes();
                 this._view.webview.html = this._getHtml(notes);
             }
         });
@@ -850,7 +879,7 @@ class NotesViewProvider {
 }
 
 // ============================================
-// TODO Webview Provider (per-project)
+// TODO Webview Provider (file-based, per-project)
 // ============================================
 class TodoViewProvider {
     constructor(context) {
@@ -858,31 +887,61 @@ class TodoViewProvider {
         this._view = undefined;
     }
 
-    _getStorageKey() {
+    _getFilePath() {
         const folders = vscode.workspace.workspaceFolders;
         if (folders && folders.length > 0) {
-            return 'vibecoding-todo-' + folders[0].uri.fsPath;
+            return path.join(folders[0].uri.fsPath, '.vscode', 'vibestation-todo.json');
         }
-        return 'vibecoding-todo-global';
+        return null;
+    }
+
+    _ensureDir(filePath) {
+        const dir = path.dirname(filePath);
+        try {
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir, { recursive: true });
+            }
+        } catch (e) {}
+    }
+
+    _loadTodos() {
+        const filePath = this._getFilePath();
+        if (!filePath) return [];
+        try {
+            if (fs.existsSync(filePath)) {
+                const content = fs.readFileSync(filePath, 'utf-8');
+                const parsed = JSON.parse(content);
+                return Array.isArray(parsed) ? parsed : [];
+            }
+        } catch (e) {}
+        return [];
+    }
+
+    _saveTodos(todos) {
+        const filePath = this._getFilePath();
+        if (!filePath) return;
+        try {
+            this._ensureDir(filePath);
+            fs.writeFileSync(filePath, JSON.stringify(todos, null, 2), 'utf-8');
+        } catch (e) {}
     }
 
     resolveWebviewView(webviewView) {
         this._view = webviewView;
         webviewView.webview.options = { enableScripts: true };
 
-        const todos = this._context.globalState.get(this._getStorageKey(), []);
+        const todos = this._loadTodos();
         webviewView.webview.html = this._getHtml(todos);
 
         webviewView.webview.onDidReceiveMessage(msg => {
-            const key = this._getStorageKey();
             if (msg.type === 'save') {
-                this._context.globalState.update(key, msg.todos);
+                this._saveTodos(msg.todos);
             }
         });
 
         vscode.workspace.onDidChangeWorkspaceFolders(() => {
             if (this._view) {
-                const todos = this._context.globalState.get(this._getStorageKey(), []);
+                const todos = this._loadTodos();
                 this._view.webview.html = this._getHtml(todos);
             }
         });
@@ -1048,7 +1107,7 @@ class TodoViewProvider {
 }
 
 // ============================================
-// Snippets Webview Provider (per-project)
+// Snippets Webview Provider (file-based, per-project)
 // ============================================
 class SnippetsViewProvider {
     constructor(context) {
@@ -1056,24 +1115,55 @@ class SnippetsViewProvider {
         this._view = undefined;
     }
 
-    _getStorageKey() {
+    _getFilePath() {
         const folders = vscode.workspace.workspaceFolders;
         if (folders && folders.length > 0) {
-            return 'vibecoding-snippets-' + folders[0].uri.fsPath;
+            return path.join(folders[0].uri.fsPath, '.vscode', 'vibestation-snippets.json');
         }
-        return 'vibecoding-snippets-global';
+        return null;
+    }
+
+    _ensureDir(filePath) {
+        const dir = path.dirname(filePath);
+        try {
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir, { recursive: true });
+            }
+        } catch (e) {}
+    }
+
+    _loadSnippets() {
+        const filePath = this._getFilePath();
+        if (!filePath) return [];
+        try {
+            if (fs.existsSync(filePath)) {
+                const content = fs.readFileSync(filePath, 'utf-8');
+                const parsed = JSON.parse(content);
+                return Array.isArray(parsed) ? parsed : [];
+            }
+        } catch (e) {}
+        return [];
+    }
+
+    _saveSnippets(snippets) {
+        const filePath = this._getFilePath();
+        if (!filePath) return;
+        try {
+            this._ensureDir(filePath);
+            fs.writeFileSync(filePath, JSON.stringify(snippets, null, 2), 'utf-8');
+        } catch (e) {}
     }
 
     resolveWebviewView(webviewView) {
         this._view = webviewView;
         webviewView.webview.options = { enableScripts: true };
 
-        const snippets = this._context.globalState.get(this._getStorageKey(), []);
+        const snippets = this._loadSnippets();
         webviewView.webview.html = this._getHtml(snippets);
 
         webviewView.webview.onDidReceiveMessage(msg => {
             if (msg.type === 'save') {
-                this._context.globalState.update(this._getStorageKey(), msg.snippets);
+                this._saveSnippets(msg.snippets);
             } else if (msg.type === 'paste') {
                 const terminal = vscode.window.activeTerminal;
                 if (terminal) {
@@ -1090,7 +1180,7 @@ class SnippetsViewProvider {
 
         vscode.workspace.onDidChangeWorkspaceFolders(() => {
             if (this._view) {
-                const snippets = this._context.globalState.get(this._getStorageKey(), []);
+                const snippets = this._loadSnippets();
                 this._view.webview.html = this._getHtml(snippets);
             }
         });
@@ -1284,7 +1374,7 @@ class SnippetsViewProvider {
 }
 
 // ============================================
-// Bookmarks Webview Provider (per-project)
+// Bookmarks Webview Provider (file-based, per-project)
 // ============================================
 class BookmarksViewProvider {
     constructor(context) {
@@ -1292,17 +1382,47 @@ class BookmarksViewProvider {
         this._view = undefined;
     }
 
-    _getStorageKey() {
+    _getFilePath() {
         const folders = vscode.workspace.workspaceFolders;
         if (folders && folders.length > 0) {
-            return 'vibecoding-bookmarks-' + folders[0].uri.fsPath;
+            return path.join(folders[0].uri.fsPath, '.vscode', 'vibestation-bookmarks.json');
         }
-        return 'vibecoding-bookmarks-global';
+        return null;
+    }
+
+    _ensureDir(filePath) {
+        const dir = path.dirname(filePath);
+        try {
+            if (!fs.existsSync(dir)) {
+                fs.mkdirSync(dir, { recursive: true });
+            }
+        } catch (e) {}
+    }
+
+    _loadBookmarks() {
+        const filePath = this._getFilePath();
+        if (!filePath) return [];
+        try {
+            if (fs.existsSync(filePath)) {
+                const content = fs.readFileSync(filePath, 'utf-8');
+                const parsed = JSON.parse(content);
+                return Array.isArray(parsed) ? parsed : [];
+            }
+        } catch (e) {}
+        return [];
+    }
+
+    _saveBookmarks(bookmarks) {
+        const filePath = this._getFilePath();
+        if (!filePath) return;
+        try {
+            this._ensureDir(filePath);
+            fs.writeFileSync(filePath, JSON.stringify(bookmarks, null, 2), 'utf-8');
+        } catch (e) {}
     }
 
     addBookmark(filePath) {
-        const key = this._getStorageKey();
-        const bookmarks = this._context.globalState.get(key, []);
+        const bookmarks = this._loadBookmarks();
         if (bookmarks.some(b => b.path === filePath)) {
             vscode.window.showInformationMessage('Already bookmarked');
             return;
@@ -1312,7 +1432,7 @@ class BookmarksViewProvider {
             name: path.basename(filePath),
             added: Date.now()
         });
-        this._context.globalState.update(key, bookmarks);
+        this._saveBookmarks(bookmarks);
         if (this._view) {
             this._view.webview.html = this._getHtml(bookmarks);
         }
@@ -1320,10 +1440,9 @@ class BookmarksViewProvider {
     }
 
     removeBookmark(filePath) {
-        const key = this._getStorageKey();
-        let bookmarks = this._context.globalState.get(key, []);
+        let bookmarks = this._loadBookmarks();
         bookmarks = bookmarks.filter(b => b.path !== filePath);
-        this._context.globalState.update(key, bookmarks);
+        this._saveBookmarks(bookmarks);
         if (this._view) {
             this._view.webview.html = this._getHtml(bookmarks);
         }
@@ -1333,7 +1452,7 @@ class BookmarksViewProvider {
         this._view = webviewView;
         webviewView.webview.options = { enableScripts: true };
 
-        const bookmarks = this._context.globalState.get(this._getStorageKey(), []);
+        const bookmarks = this._loadBookmarks();
         webviewView.webview.html = this._getHtml(bookmarks);
 
         webviewView.webview.onDidReceiveMessage(msg => {
@@ -1342,14 +1461,12 @@ class BookmarksViewProvider {
                 vscode.commands.executeCommand('vibecoding-layout.openFile', uri);
             } else if (msg.type === 'remove') {
                 this.removeBookmark(msg.path);
-            } else if (msg.type === 'save') {
-                this._context.globalState.update(this._getStorageKey(), msg.bookmarks);
             }
         });
 
         vscode.workspace.onDidChangeWorkspaceFolders(() => {
             if (this._view) {
-                const bookmarks = this._context.globalState.get(this._getStorageKey(), []);
+                const bookmarks = this._loadBookmarks();
                 this._view.webview.html = this._getHtml(bookmarks);
             }
         });
